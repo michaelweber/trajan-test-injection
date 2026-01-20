@@ -1,0 +1,80 @@
+name: AI Vulnerabilities Demo
+
+on:
+  pull_request_target:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  packages: write
+  members: write
+
+jobs:
+  # VULN: aicode - AI action with write permissions
+  ai-code-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: AI Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          code: ${{ github.event.pull_request.body }}
+          prompt: "Review this code"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # VULN: aimcp - MCP + token + untrusted input
+  ai-mcp-abuse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: copilot-workspace/copilot-action@v1
+        env:
+          ENABLE_MCP: true
+          MCP_SERVER_URL: https://api.example.com/mcp
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          user_input: ${{ github.event.comment.body }}
+
+  # VULN: aipriv - AI with dangerous permissions
+  ai-privilege-escalation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: github/copilot-cli@v1
+        with:
+          command: ${{ github.event.comment.body }}
+
+  # VULN: aisupply - AI with packages:write
+  ai-supply-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: coderabbitai/openai-pr-reviewer@v1
+        with:
+          pr_number: ${{ github.event.pull_request.number }}
+          openai_api_key: ${{ secrets.OPENAI_KEY }}
+
+  # VULN: aitoken - AI with GITHUB_TOKEN
+  ai-token-exfiltration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: qodo-ai/qodo-cover@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        with:
+          pr_body: ${{ github.event.pull_request.body }}
+
+  # VULN: aiworkflow - AI with actions:write
+  ai-workflow-manipulation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: github/copilot-workspace@v1
+        with:
+          command: ${{ github.event.comment.body }}

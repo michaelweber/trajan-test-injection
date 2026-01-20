@@ -1,0 +1,19 @@
+name: Unpinned Actions Demo
+
+on: [push]
+
+jobs:
+  unpinned-actions:
+    runs-on: ubuntu-latest
+    steps:
+      # VULN: Version tag (unpinned detector)
+      - uses: actions/checkout@v3
+
+      # VULN: Branch reference (unpinned detector)
+      - uses: actions/setup-node@main
+
+      # SAFE: SHA pinned
+      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+
+      - name: Test
+        run: npm test

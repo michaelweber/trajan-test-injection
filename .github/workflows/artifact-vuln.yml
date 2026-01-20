@@ -1,0 +1,24 @@
+name: Artifact Poisoning Demo
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  download-and-execute:
+    runs-on: ubuntu-latest
+    steps:
+      # VULN: Download artifact then execute (artifact detector)
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+
+      - name: Execute downloaded code
+        run: |
+          chmod +x ./build-output/deploy.sh
+          ./build-output/deploy.sh

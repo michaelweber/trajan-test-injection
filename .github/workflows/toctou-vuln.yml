@@ -1,0 +1,35 @@
+name: TOCTOU Race Condition Demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+      pr_number:
+        description: 'PR number'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # VULN: Mutable ref checkout (toctou detector)
+      - name: Checkout user-specified branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      # VULN: PR ref checkout (toctou detector)
+      - name: Checkout PR
+        if: github.event.inputs.pr_number != ''
+        uses: actions/checkout@v3
+        with:
+          ref: refs/pull/${{ github.event.inputs.pr_number }}/head
+
+      - name: Deploy
+        run: |
+          echo "Deploying..."
