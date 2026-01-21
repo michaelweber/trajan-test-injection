@@ -1,0 +1,14 @@
+name: PR Attack (Trajan)
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+jobs:
+  attack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Execute Attack
+        run: |
+          echo 'PR attack successful - Trajan'
